@@ -113,15 +113,27 @@ public class DontFindFox {
         public void addPiece() {
             int piece = -1;
 
-            int total = pieces.counts.values().stream().mapToInt(Integer::intValue).sum();
-            int r = random.nextInt(total);
-            int cumulative = 0;
+            // Calculate the total count (used for weighting)
+            int total = 0;
+            for (int count : pieces.counts.values()) {
+                total += count;
+            }
 
-            for (Map.Entry<Integer, Integer> entry : pieces.counts.entrySet()) {
-                cumulative += entry.getValue();
-                if (r < cumulative) {
-                    piece = entry.getKey();
-                    break;
+            if (total == 0) {
+                throw new IllegalStateException("No pieces available to choose from.");
+            }
+
+            // Pick a random number between 0 and total - 1
+            int target = random.nextInt(total);
+
+            // Loop through the counts and find the corresponding piece ID
+            int runningSum = 0;
+            for (Integer pieceId : pieces.counts.keySet()) {
+                int count = pieces.counts.get(pieceId);
+                runningSum += count;
+            
+                if (target < runningSum) {
+                    piece = pieceId;
                 }
             }
 
