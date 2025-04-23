@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class DontFindFox {
     public class PiecesRemaining {
@@ -33,6 +34,8 @@ public class DontFindFox {
         private int column_count;
         private int[][] grid;
         private PiecesRemaining pieces;
+        private int[] nextPosition;
+        private Random random = new Random();
 
         /**
          * Default Value Constructor.
@@ -41,25 +44,34 @@ public class DontFindFox {
          * @param row_count The number of rows in the grid
          * @param column_count The number of columns in the grid
          * @param pieces The count of pieces not yet placed in the grid
+         * @param nextPosition A 2-element array containing the row and column of the next piece.
          */
-        public PuzzleState(final int row_count, final int column_count, PiecesRemaining pieces) {
+        public PuzzleState(final int row_count, final int column_count, 
+        final PiecesRemaining pieces, int[] nextPosition) {
             this.row_count = row_count;
             this.column_count = column_count;
             this.grid = new int[row_count][column_count];
             this.pieces = pieces;
+            this.nextPosition = nextPosition;
         }
-
+        
         /**
          * Explicit Value Constructor.
          * @param grid A two-dimensional array of the rows and columns.
          * 0 represents an empty cell, and positive integers each represent a letter.
          * @param pieces The count of pieces not yet placed in the grid
+         * @param nextPosition A 2-element array containing the row and column of the next piece.
          */
-        public PuzzleState(final int[][] grid, PiecesRemaining pieces) {
+        public PuzzleState(final int[][] grid, PiecesRemaining pieces, int[] nextPosition) {
             this.grid = grid;
             this.row_count = grid.length;
             this.column_count = grid[0].length;
             this.pieces = pieces;
+            this.nextPosition = nextPosition;
+        }
+
+        public PuzzleState(final int[][] grid, PiecesRemaining pieces) {
+            this(grid, pieces, null);
         }
 
         /**
@@ -67,7 +79,53 @@ public class DontFindFox {
          * @return Array of PuzzleState neighbors
          */
         public PuzzleState[] neighbors() {
-            return null;
+            PuzzleState[] neighbors = new PuzzleState[row_count * column_count];
+            int count = 0;
+
+            for (int i = 0; i < row_count; i++) {
+                for (int j = 0; j < column_count; j++) {
+                    if (grid[i][j] == 0) {
+                        int[] position = new int[2];
+                        position[0] = i;
+                        position[1] = j;
+                        neighbors[count] = new PuzzleState(grid, pieces, position);
+                        count++;
+                    }
+                }
+            }
+
+            return neighbors;
+        }
+
+        /**
+         * Insert a given piece into the grid at nextPosition.
+         * Also removes that piece from the pieces remaining
+         */
+        public void addPiece(int piece) {
+            grid[nextPosition[0]][nextPosition[1]] = piece;
+            pieces.decrementPiece(piece);
+        }
+
+        /**
+         * Insert a randomly chosen piece into the grid at nextPosition.
+         * Also removes that piece from the pieces remaining
+         */
+        public void addPiece() {
+            int piece = -1;
+
+            int total = pieces.counts.values().stream().mapToInt(Integer::intValue).sum();
+            int r = random.nextInt(total);
+            int cumulative = 0;
+
+            for (Map.Entry<Integer, Integer> entry : pieces.counts.entrySet()) {
+                cumulative += entry.getValue();
+                if (r < cumulative) {
+                    piece = entry.getKey();
+                    break;
+                }
+            }
+
+            addPiece(piece);
         }
     }
 
