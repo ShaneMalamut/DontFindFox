@@ -1,77 +1,108 @@
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Random;
+import java.util.Set;
 
 public class DontFindFox {
-    public class PiecesRemaining {
-        protected final Map<String, Integer> pieces = new HashMap<>();
-        protected final Map<Integer, Integer> counts = new HashMap<>();
-        private int nextId = 1;
+    /**
+     * Class representing the tiles left to be played.
+     */
+    public class TilesLeft {
+        protected HashMap<Character, Integer> tiles = new HashMap<>();
 
-        /**
-         * Add a piece and its count to the pieces remaining.
+        /** 
+         * Copy constructor.
          */
-        public void add(final String piece, final int count) {
-            pieces.put(piece, nextId);
-            counts.put(nextId, count);
-            nextId++;
+        @SuppressWarnings("unchecked")
+		public TilesLeft(TilesLeft original) {
+            this.tiles = (HashMap<Character, Integer>) original.tiles.clone();
         }
 
         /**
-         * Decrements the count of the appropriate piece by 1
-         * @param id the Id of the piece
+         * Add a tile and its count to the pieces remaining.
+         * This function should be used during construction.
          */
-        public void decrementPiece(int id) {
-            counts.put(id, counts.get(id) - 1);
+        public void add(char tile, int count) {
+            tiles.put(tile, count);
+        }
+
+        /**
+         * Decrement the count of the given tile by 1.
+         */
+        public void decrementPiece(char tile) {
+            tiles.put(tile, tiles.get(tile) - 1);
+        }
+
+        /**
+         * Get the set of characters which have a count greater than zero.
+         */
+        public Set<Character> getAvailableCharacters() {
+            Set<Character> available = new HashSet<>();
+
+            for (Map.Entry<Character, Integer> entry : tiles.entrySet()) {
+                if (entry.getValue() > 0) {
+                    available.add(entry.getKey());
+                }
+            }
+
+            return available;
         }
     }
 
     /**
-     * Class representing a single world state, defined by the placement of pieces in the grid, and the pieces remaining.
+     * Class representing a single world state, defined by the placement of tiles in the grid, 
+     * the count of tiles yet to be placed, and which player's turn it is.
+     * Initialized with an arbitrary grid size, special word and letter counts.
      */
     public class PuzzleState {
-        private int row_count;
-        private int column_count;
         private int[][] grid;
-        private PiecesRemaining pieces;
-        private int[] nextPosition;
-        private Random random = new Random();
+        private TilesLeft tiles;
+        private boolean turn;
+        private int moves_made;
+        private final int row_count;
+        private final int column_count;
+        private final String word;
 
         /**
-         * Default Value Constructor.
-         * Constructs an empty PuzzleState with the given number of rows and columns.
-         * All cells are set to the value 0.
+         * Constructor.
+         * If grid is null, constructs an empty PuzzleState with the given number of rows and columns.
+         * @param grid A two-dimensional array of the rows and columns
          * @param row_count The number of rows in the grid
          * @param column_count The number of columns in the grid
-         * @param pieces The count of pieces not yet placed in the grid
-         * @param nextPosition A 2-element array containing the row and column of the next piece.
+         * @param tiles The count of each tile or "letter" not yet placed in the grid
+         * @param turn True when it is player 1's turn (MAX), false when player 2's turn (MIN)
          */
-        public PuzzleState(final int row_count, final int column_count, 
-        final PiecesRemaining pieces, int[] nextPosition) {
+        public PuzzleState(int[][] grid, int row_count, int column_count, String word, 
+        TilesLeft tiles, boolean turn, int moves_made) {
+            if (grid == null) {
+                grid = new int[row_count][column_count];
+            }
+            
             this.row_count = row_count;
             this.column_count = column_count;
-            this.grid = new int[row_count][column_count];
-            this.pieces = pieces;
-            this.nextPosition = nextPosition;
-        }
-        
-        /**
-         * Explicit Value Constructor.
-         * @param grid A two-dimensional array of the rows and columns.
-         * 0 represents an empty cell, and positive integers each represent a letter.
-         * @param pieces The count of pieces not yet placed in the grid
-         * @param nextPosition A 2-element array containing the row and column of the next piece.
-         */
-        public PuzzleState(final int[][] grid, PiecesRemaining pieces, int[] nextPosition) {
             this.grid = grid;
-            this.row_count = grid.length;
-            this.column_count = grid[0].length;
-            this.pieces = pieces;
-            this.nextPosition = nextPosition;
+            this.word = word;
+            this.tiles = tiles;
+            this.turn = turn;
+            this.moves_made = moves_made;
         }
 
-        public PuzzleState(final int[][] grid, PiecesRemaining pieces) {
-            this(grid, pieces, null);
+        /**
+         * Clones the current PuzzleState with a deep copy of the grid and tiles. Also changes the turn and increases moves made.
+         */
+        public PuzzleState constructNeighbor() {
+            // Make a copy of the grid by copying each row into a new grid
+            int[][] newGrid = new int[row_count][column_count];
+            for (int i = 0; i < row_count; i++) {
+                newGrid[i] = Arrays.copyOf(grid[i], row_count);
+            }
+
+            // Make a copy of the tiles
+            TilesLeft newTiles = new TilesLeft(tiles);
+
+            PuzzleState neighbor = new PuzzleState(newGrid, row_count, column_count, word, newTiles, !turn, moves_made + 1);
+            return neighbor;
         }
 
         /**
@@ -79,17 +110,24 @@ public class DontFindFox {
          * @return Array of PuzzleState neighbors
          */
         public PuzzleState[] neighbors() {
-            PuzzleState[] neighbors = new PuzzleState[row_count * column_count];
+            Set<Character> available = tiles.getAvailableCharacters();
+            int neighborCount = available.size() * (row_count * column_count - moves_made);
+            PuzzleState[] neighbors = new PuzzleState[neighborCount];
             int count = 0;
 
+            // Loop through the grid and create a neighbor for every tile that could be inserted into each cell.
             for (int i = 0; i < row_count; i++) {
                 for (int j = 0; j < column_count; j++) {
                     if (grid[i][j] == 0) {
-                        int[] position = new int[2];
-                        position[0] = i;
-                        position[1] = j;
-                        neighbors[count] = new PuzzleState(grid, pieces, position);
-                        count++;
+                        for (char tile : available) {
+                            PuzzleState neighbor = constructNeighbor();
+                            
+                            neighbor.insertTile(i, j, tile);
+                            neighbor.tiles.decrementPiece(tile);                            
+                            
+                            neighbors[count] = neighbor;
+                            count++;
+                        }
                     }
                 }
             }
@@ -97,47 +135,8 @@ public class DontFindFox {
             return neighbors;
         }
 
-        /**
-         * Insert a given piece into the grid at nextPosition.
-         * Also removes that piece from the pieces remaining
-         */
-        public void addPiece(int piece) {
-            grid[nextPosition[0]][nextPosition[1]] = piece;
-            pieces.decrementPiece(piece);
-        }
-
-        /**
-         * Insert a randomly chosen piece into the grid at nextPosition.
-         * Also removes that piece from the pieces remaining
-         */
-        public void addPiece() {
-            int piece = -1;
-
-            // Calculate the total count (used for weighting)
-            int total = 0;
-            for (int count : pieces.counts.values()) {
-                total += count;
-            }
-
-            if (total == 0) {
-                throw new IllegalStateException("No pieces available to choose from.");
-            }
-
-            // Pick a random number between 0 and total - 1
-            int target = random.nextInt(total);
-
-            // Loop through the counts and find the corresponding piece ID
-            int runningSum = 0;
-            for (Integer pieceId : pieces.counts.keySet()) {
-                int count = pieces.counts.get(pieceId);
-                runningSum += count;
-            
-                if (target < runningSum) {
-                    piece = pieceId;
-                }
-            }
-
-            addPiece(piece);
+        public void insertTile(int row, int col, char tile) {
+            grid[row][col] = tile;
         }
     }
 
