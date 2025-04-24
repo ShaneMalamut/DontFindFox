@@ -75,15 +75,16 @@ public class DontFindFox {
         private final TilesLeft tiles;
         private final boolean   turn;
         private final int       moves_made;
+        private int[]           last_cell_position = null;
 
         /**
          * Constructor.
          * If grid is null, constructs an empty PuzzleState with the given number of rows and columns.
-         * @param grid A two-dimensional array of the rows and columns
-         * @param row_count The number of rows in the grid
-         * @param column_count The number of columns in the grid
-         * @param tiles The count of each tile or "letter" not yet placed in the grid
-         * @param turn True when it is player 1's turn (MAX), false when player 2's turn (MIN)
+         * @param grid          A two-dimensional array of the rows and columns
+         * @param row_count     The number of rows in the grid
+         * @param column_count  The number of columns in the grid
+         * @param tiles         The count of each tile or "letter" not yet placed in the grid
+         * @param turn          True when it is player 1's turn (MAX), false when player 2's turn (MIN)
          */
         public PuzzleState(int[][] grid, int row_count, int column_count, String word, 
         TilesLeft tiles, boolean turn, int moves_made) {
@@ -150,7 +151,9 @@ public class DontFindFox {
                             PuzzleState neighbor = constructNeighbor();
                             
                             neighbor.insertTile(i, j, tile);
-                            neighbor.tiles.decrementPiece(tile);                            
+                            neighbor.tiles.decrementPiece(tile);
+                            int[] position = {i, j};
+                            neighbor.last_cell_position = position;
                             
                             neighbors[count] = neighbor;
                             count++;
@@ -174,7 +177,105 @@ public class DontFindFox {
      * AlphaBeta pruning algorithm and heuristic.
      */
     public class AlphaBeta {
+        private String   word;
+        private String[] combinations;
+        private Double   max_value;
+        private Double   min_value;
 
+        protected class PuzzleScore {
+            private final PuzzleState state;
+            private final Double      value;
+
+            public PuzzleScore(PuzzleState state, Double value) {
+                this.state = state;
+                this.value = value;
+            }
+        }
+
+        /**
+         * Prepare values and begin the AlphaBeta pruning algorithm.
+         * Returns the best neighbor and its value.
+         */
+        public PuzzleScore start(PuzzleState state, int depth, String word) {
+            combinations = generateCombinations(word);
+
+            return h_alphabeta(state, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
+
+        /**
+         * Recursive AlphaBeta pruning algorithm.
+         */
+        private PuzzleScore h_alphabeta(PuzzleState state, int depth, Double alpha, Double beta) {
+            int leaf_value = isLeaf(state);
+            
+            if (leaf_value == max_value) {
+                return new PuzzleScore(null, max_value);
+            } else if (leaf_value == min_value) {
+                return new PuzzleScore(null, min_value);
+            } else if (depth == 0) {
+                return new PuzzleScore(null, heuristic(state));
+            } else if (state.turn) { // MAX node
+                Double value = Double.NEGATIVE_INFINITY;
+                PuzzleState best_neighbor = null;
+
+                for (PuzzleState neighbor : state.neighbors()) {
+                    PuzzleScore child_value = h_alphabeta(neighbor, depth - 1, alpha, beta);
+
+                    if (child_value.value > value) {
+                        value = child_value.value;
+                        best_neighbor = neighbor;
+                    }
+                    if (value > alpha) {
+                        alpha = value;
+                    }
+                    if (alpha >= beta) {
+                        break; // Pruning
+                    }
+                }
+
+                // Return value and best neighbor for MAX
+                return new PuzzleScore(best_neighbor, value);
+            } else { // MIN node
+                Double value = Double.POSITIVE_INFINITY;
+                PuzzleState best_neighbor = null;
+
+                for (PuzzleState neighbor : state.neighbors()) {
+                    PuzzleScore child_value = h_alphabeta(neighbor, depth - 1, alpha, beta);
+
+                    if (child_value.value < value) {
+                        value = child_value.value;
+                        best_neighbor = neighbor;
+                    }
+                    if (value < beta) {
+                        beta = value;
+                    }
+                    if (beta <= alpha) {
+                        break; // Pruning
+                    }
+                }
+
+                // Return value and best neighbor for MIN
+                return new PuzzleScore(best_neighbor, value);
+            }
+        }
+
+        private Double heuristic(PuzzleState state) {
+            return 0.0;
+        }
+
+        /**
+         * Generate the two-letter combinations from the word, used by the heuristic.
+         */
+        private String[] generateCombinations(String word) {
+            return null;
+        }
+
+        /**
+         * Return the max or min value if it is a leaf node. Otherwise, return 0.
+         */
+        private int isLeaf(PuzzleState state) {
+            return 0;
+        }
     }
 
     public static void main (String[] args)
