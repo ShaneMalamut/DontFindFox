@@ -20,6 +20,18 @@ public class DontFindFox {
         }
 
         /**
+         * Print the tiles and their counts.
+         */
+        public void printTiles() {
+            for (Map.Entry<Character, Integer> entry : tiles.entrySet()) {
+                System.out.print(entry.getKey() + "=" + entry.getValue() + " ");
+            }
+
+            System.out.println();
+        }
+        
+
+        /**
          * Add a tile and its count to the pieces remaining.
          * This function should be used during construction.
          */
@@ -86,6 +98,21 @@ public class DontFindFox {
             this.tiles = tiles;
             this.turn = turn;
             this.moves_made = moves_made;
+        }
+
+        /**
+         * Print the tiles and the grid.
+         */
+        public void printPuzzle() {
+            tiles.printTiles();
+
+            for (int[] row : grid) {
+                for (int cell : row) {
+                    System.out.print((cell == 0 ? '.' : cell) + ' ' );
+                }
+
+                System.out.println();
+            }
         }
 
         /**
