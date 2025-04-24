@@ -56,13 +56,13 @@ public class DontFindFox {
      * Initialized with an arbitrary grid size, special word and letter counts.
      */
     public class PuzzleState {
-        private int[][] grid;
-        private TilesLeft tiles;
-        private boolean turn;
-        private int moves_made;
-        private final int row_count;
-        private final int column_count;
-        private final String word;
+        private final int[][]   grid;
+        private final int       row_count;
+        private final int       column_count;
+        private final String    word;
+        private final TilesLeft tiles;
+        private final boolean   turn;
+        private final int       moves_made;
 
         /**
          * Constructor.
@@ -135,15 +135,18 @@ public class DontFindFox {
             return neighbors;
         }
 
+        /**
+         * Insert a tile into the grid at a given row and column.
+         */
         public void insertTile(int row, int col, char tile) {
             grid[row][col] = tile;
         }
     }
 
     /**
-     * Algorithm for finding the best possible move.
+     * AlphaBeta pruning algorithm and heuristic.
      */
-    public class Solver {
+    public class AlphaBeta {
 
     }
 
