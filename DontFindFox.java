@@ -88,9 +88,8 @@ public class DontFindFox {
          */
         public PuzzleState(int[][] grid, int row_count, int column_count, String word, 
         TilesLeft tiles, boolean turn, int moves_made) {
-            if (grid == null) {
+            if (grid == null)
                 grid = new int[row_count][column_count];
-            }
             
             this.row_count = row_count;
             this.column_count = column_count;
@@ -179,14 +178,16 @@ public class DontFindFox {
     public class AlphaBeta {
         private String   word;
         private String[] combinations;
-        private Double   max_value;
-        private Double   min_value;
+        private int   max_value;
+        private int   min_value = 0;
+        private int      row_count;
+        private int      column_count;
 
         protected class PuzzleScore {
             private final PuzzleState state;
-            private final Double      value;
+            private final int         value;
 
-            public PuzzleScore(PuzzleState state, Double value) {
+            public PuzzleScore(PuzzleState state, int value) {
                 this.state = state;
                 this.value = value;
             }
@@ -197,15 +198,29 @@ public class DontFindFox {
          * Returns the best neighbor and its value.
          */
         public PuzzleScore start(PuzzleState state, int depth, String word) {
+            row_count = state.row_count;
+            column_count = state.column_count;
             combinations = generateCombinations(word);
+            
+            int max_value = 0;
+            // Calculate min and max heuristic values
+            for (String combination : combinations) {
+                // Get the count for the left letter and the right letter
+                int left_count = state.tiles.tiles.get(combination.charAt(0));
+                int right_count = state.tiles.tiles.get(combination.charAt(1));
 
-            return h_alphabeta(state, depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                // Add the minimum to max_value
+                max_value += Math.min(left_count, right_count);
+            }
+            this.max_value = max_value;
+
+            return h_alphabeta(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
         }
 
         /**
          * Recursive AlphaBeta pruning algorithm.
          */
-        private PuzzleScore h_alphabeta(PuzzleState state, int depth, Double alpha, Double beta) {
+        private PuzzleScore h_alphabeta(PuzzleState state, int depth, int alpha, int beta) {
             int leaf_value = isLeaf(state);
             
             if (leaf_value == max_value) {
@@ -215,7 +230,7 @@ public class DontFindFox {
             } else if (depth == 0) {
                 return new PuzzleScore(null, heuristic(state));
             } else if (state.turn) { // MAX node
-                Double value = Double.NEGATIVE_INFINITY;
+                int value = Integer.MIN_VALUE;
                 PuzzleState best_neighbor = null;
 
                 for (PuzzleState neighbor : state.neighbors()) {
@@ -225,18 +240,17 @@ public class DontFindFox {
                         value = child_value.value;
                         best_neighbor = neighbor;
                     }
-                    if (value > alpha) {
-                        alpha = value;
-                    }
-                    if (alpha >= beta) {
+
+                    alpha = Math.max(alpha, value);
+                    
+                    if (alpha >= beta)
                         break; // Pruning
-                    }
                 }
 
                 // Return value and best neighbor for MAX
                 return new PuzzleScore(best_neighbor, value);
             } else { // MIN node
-                Double value = Double.POSITIVE_INFINITY;
+                int value = Integer.MAX_VALUE;
                 PuzzleState best_neighbor = null;
 
                 for (PuzzleState neighbor : state.neighbors()) {
@@ -246,12 +260,11 @@ public class DontFindFox {
                         value = child_value.value;
                         best_neighbor = neighbor;
                     }
-                    if (value < beta) {
-                        beta = value;
-                    }
-                    if (beta <= alpha) {
+
+                    beta = Math.min(beta, value);
+
+                    if (beta <= alpha)
                         break; // Pruning
-                    }
                 }
 
                 // Return value and best neighbor for MIN
@@ -259,15 +272,21 @@ public class DontFindFox {
             }
         }
 
-        private Double heuristic(PuzzleState state) {
-            return 0.0;
+        private int heuristic(PuzzleState state) {
+            return 0;
         }
 
         /**
-         * Generate the two-letter combinations from the word, used by the heuristic.
+         * Generate the two-letter combinations from the word, used by the heuristic. 
          */
         private String[] generateCombinations(String word) {
-            return null;
+            combinations = new String[word.length() - 1];
+
+            for (int i = 0; i < word.length() - 1; i++) {
+                combinations[i] = word.substring(i, i + 2);
+            }
+
+            return combinations;
         }
 
         /**
@@ -275,6 +294,10 @@ public class DontFindFox {
          */
         private int isLeaf(PuzzleState state) {
             return 0;
+
+            // Return min if the word has been created using the most recent tile
+            // Otherwise, return max if it is a full board
+            // Otherwise return 0
         }
     }
 
