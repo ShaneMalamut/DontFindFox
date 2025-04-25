@@ -7,39 +7,41 @@ import java.util.Set;
 public class AlphaBeta {
     private String      word;
     private Set<String> combinations;
-    private int         max_value;
-    private int         min_value;
     private int         row_count;
     private int         column_count;
+    private int         max_value = -1; // Max value overridden on first call to start()
+    private final int   min_value = 0; // Min value is just 0 because the heuristic can't go negative.
 
     /**
-        * Prepare values and begin the AlphaBeta pruning algorithm.
-        * Returns the best neighbor and its value.
-        */
-    public PuzzleScore start(PuzzleState state, int depth, String word) {
+    * Prepare values and begin the AlphaBeta pruning algorithm.
+    * Returns the best neighbor and its value.
+    * Also prepares max_value for the first call.
+    */
+    public PuzzleScore start(PuzzleState state, int depth, String word) {  
         row_count = state.row_count;
         column_count = state.column_count;
         this.word = word;
         combinations = generateCombinations(word);
-        
-        max_value = 0;
-        // Calculate min and max heuristic values
-        for (String combination : combinations) {
-            // Get the count for the left letter and the right letter
-            int left_count = state.tiles.tiles.get(combination.charAt(0));
-            int right_count = state.tiles.tiles.get(combination.charAt(1));
 
-            // Add the minimum to max_value
-            max_value += Math.min(left_count, right_count);
+        if (max_value == -1) {
+            max_value = 0;
+            // Calculate max heuristic values
+            for (String combination : combinations) {
+                // Get the count for the left letter and the right letter
+                int left_count = state.tiles.tiles.get(combination.charAt(0));
+                int right_count = state.tiles.tiles.get(combination.charAt(1));
+
+                // Add the minimum to max_value
+                max_value += Math.min(left_count, right_count);
+            }
         }
-        min_value = 0; // Min value is just 0 because the heuristic can't go negative.
-
+        
         return h_alphabeta(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     /**
-        * Recursive AlphaBeta pruning algorithm.
-        */
+    * Recursive AlphaBeta pruning algorithm.
+    */
     private PuzzleScore h_alphabeta(PuzzleState state, int depth, int alpha, int beta) {
         int leaf_value = isLeaf(state);
         
@@ -93,10 +95,10 @@ public class AlphaBeta {
     }
 
     /**
-        * Counts and totals how often each two-letter combination from the word appears in the grid.
-        * Only counts if the word can actually be completed. (i.e. isn't being blocked by an invalid tile 
-        * or the edge of the grid.)
-        */
+    * Counts and totals how often each two-letter combination from the word appears in the grid.
+    * Only counts if the word can actually be completed. (i.e. isn't being blocked by an invalid tile 
+    * or the edge of the grid.)
+    */
     private int heuristic(PuzzleState state) {
         int matches = 0;
 
@@ -136,8 +138,8 @@ public class AlphaBeta {
     }
 
     /**
-        * Generate the two-letter combinations from the word, used by the heuristic. 
-        */
+    * Generate the two-letter combinations from the word, used by the heuristic. 
+    */
     private Set<String> generateCombinations(String word) {
         combinations = new HashSet<>();
 
@@ -149,8 +151,8 @@ public class AlphaBeta {
     }
 
     /**
-        * Return 1 if it is a win for MAX, -1 if it is a win for MIN, or 0 if it is not a leaf node.
-        */
+    * Return 1 if it is a win for MAX, -1 if it is a win for MIN, or 0 if it is not a leaf node.
+    */
     public int isLeaf(PuzzleState state) {
         if (state.last_cell_position == null)
             return 0;
@@ -185,11 +187,12 @@ public class AlphaBeta {
                 }
 
                 if (found) {
+                    //System.out.println("left to right: " + row + ", " + leftmost_column);
                     return 1;
                 }
             }
             if (right_to_left) {
-                int rightmost_column = column + i; //2
+                int rightmost_column = column + i;
 
                 boolean found = true;
                 for (int j = rightmost_column; j > rightmost_column - word.length(); j--) {
@@ -200,6 +203,7 @@ public class AlphaBeta {
                 }
 
                 if (found) {
+                    //System.out.println("right to left: " + row + ", " + rightmost_column);
                     return 1;
                 }
             }
@@ -217,6 +221,7 @@ public class AlphaBeta {
                 }
 
                 if (found) {
+                    //System.out.println("top to bottom: " + topmost_row + ", " + column);
                     return 1;
                 }
             }
@@ -232,6 +237,7 @@ public class AlphaBeta {
                 }
 
                 if (found) {
+                    //System.out.println("top to bottom: " + bottommost_row + ", " + column);
                     return 1;
                 }
             }
@@ -247,7 +253,7 @@ public class AlphaBeta {
             // }
         }
 
-        // If it is a full board, it is a win for MAX
+        // If it is a full board, it is a win for MIN
         if (state.moves_made == row_count * column_count) {
             return -1;
         }
