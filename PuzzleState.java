@@ -47,7 +47,7 @@ public class PuzzleState {
 
         for (int[] row : grid) {
             for (int cell : row) {
-                System.out.print((cell == 0 ? '.' : cell) + ' ' );
+                System.out.print((cell == 0 ? "." : cell) + " " );
             }
 
             System.out.println();

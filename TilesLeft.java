@@ -32,7 +32,6 @@ public class TilesLeft {
         System.out.println();
     }
     
-
     /**
      * Add a tile and its count to the pieces remaining.
      * This function should be used during construction.
