@@ -7,7 +7,7 @@ import java.util.Set;
  * Initialized with an arbitrary grid size, special word and letter counts.
  */
 public class PuzzleState {
-    final int[][]   grid;
+    final char[][]  grid;
     final int       row_count;
     final int       column_count;
     final String    word;
@@ -25,10 +25,10 @@ public class PuzzleState {
      * @param tiles         The count of each tile or "letter" not yet placed in the grid
      * @param turn          True when it is player 1's turn (MAX), false when player 2's turn (MIN)
      */
-    public PuzzleState(int[][] grid, int row_count, int column_count, String word, 
+    public PuzzleState(char[][] grid, int row_count, int column_count, String word, 
     TilesLeft tiles, boolean turn, int moves_made) {
         if (grid == null)
-            grid = new int[row_count][column_count];
+            grid = new char[row_count][column_count];
         
         this.row_count = row_count;
         this.column_count = column_count;
@@ -45,9 +45,9 @@ public class PuzzleState {
     public void printPuzzle() {
         tiles.printTiles();
 
-        for (int[] row : grid) {
-            for (int cell : row) {
-                System.out.print((cell == 0 ? "." : cell) + " " );
+        for (char[] row : grid) {
+            for (char cell : row) {
+                System.out.print((cell == 0 ? "." : cell) + " ");
             }
 
             System.out.println();
@@ -60,7 +60,7 @@ public class PuzzleState {
      */
     public PuzzleState constructNeighbor() {
         // Make a copy of the grid by copying each row into a new grid
-        int[][] newGrid = new int[row_count][column_count];
+        char[][] newGrid = new char[row_count][column_count];
         for (int i = 0; i < row_count; i++) {
             newGrid[i] = Arrays.copyOf(grid[i], row_count);
         }
