@@ -179,7 +179,7 @@ public class DontFindFox {
      */
     public class AlphaBeta {
         private String      word;
-        private String[]    combinations;
+        private Set<String> combinations;
         private int         max_value;
         private int         min_value;
         private int         row_count;
@@ -280,17 +280,39 @@ public class DontFindFox {
          * or the edge of the grid.)
          */
         private int heuristic(PuzzleState state) {
-            return 0;
+            int matches = 0;
+
+            // Check down and to the right
+            for (int row = 0; row <= row_count; row++) {
+                for (int column = 0; column <= column_count; column++) {
+                    if (combinations.contains("" + state.grid[row][column] + state.grid[row + 1][column]))
+                        matches++;
+                    if (combinations.contains("" + state.grid[row][column] + state.grid[row][column + 1]))
+                        matches++;
+                }
+            }
+
+            // Check up and to the left
+            for (int row = 1; row < row_count; row++) {
+                for (int column = 1; column < column_count; column++) {
+                    if (combinations.contains("" + state.grid[row][column] + state.grid[row - 1][column]))
+                        matches++;
+                    if (combinations.contains("" + state.grid[row][column] + state.grid[row][column - 1]))
+                        matches++;
+                }
+            }
+
+            return matches;
         }
 
         /**
          * Generate the two-letter combinations from the word, used by the heuristic. 
          */
-        private String[] generateCombinations(String word) {
-            combinations = new String[word.length() - 1];
+        private Set<String> generateCombinations(String word) {
+            combinations = new HashSet<>();
 
             for (int i = 0; i < word.length() - 1; i++) {
-                combinations[i] = word.substring(i, i + 2);
+                combinations.add(word.substring(i, i + 2));
             }
 
             return combinations;
