@@ -352,7 +352,7 @@ public class DontFindFox {
                     }
 
                     if (found) {
-                        return -1;
+                        return 1;
                     }
                 }
                 if (right_to_left) {
@@ -367,7 +367,7 @@ public class DontFindFox {
                     }
 
                     if (found) {
-                        return -1;
+                        return 1;
                     }
                 }
 
@@ -384,7 +384,7 @@ public class DontFindFox {
                     }
 
                     if (found) {
-                        return -1;
+                        return 1;
                     }
                 }
                 if (bottom_to_top) {
@@ -399,51 +399,27 @@ public class DontFindFox {
                     }
 
                     if (found) {
-                        return -1;
+                        return 1;
                     }
                 }
 
-                // // Check for the word in the diagonals
+                // Check for the word in the diagonals
                 // if (top_to_bottom && left_to_right) {
-                //     int leftmost_column = column - i;
-                //     int topmost_row = row - i;
-
-                //     boolean found = true;
-                //     for (int j = leftmost_column; j < word.length() + leftmost_column; j++) {
-                //         if (state.grid[row][j] != word.charAt(j - leftmost_column)) {
-                //             found = false;
-                //             break;
-                //         }
-                //     }
-
-                //     if (found) {
-                //         return -1;
-                //     }
-
-
-                //     for (int j = topmost_row; j < word.length() + topmost_row; j++) {
-                //         if (state.grid[j][column] != word.charAt(j - topmost_row)) {
-                //             found = false;
-                //             break;
-                //         }
-                //     }
                 // }
                 // if (top_to_bottom && right_to_left) {
-
                 // }
                 // if (bottom_to_top && left_to_right) {
-
                 // }
                 // if (bottom_to_top && right_to_left) {
-
                 // }
             }
 
             // If it is a full board, it is a win for MAX
             if (state.moves_made == row_count * column_count) {
-                return 1;
+                return -1;
             }
 
+            // Not a leaf node
             return 0;
         }
     }
