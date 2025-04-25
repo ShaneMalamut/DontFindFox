@@ -242,7 +242,7 @@ public class AlphaBeta {
                 }
             }
 
-            // Check for the word in the diagonals
+            // Check for the word in the diagonals (Not used)
             // if (top_to_bottom && left_to_right) {
             // }
             // if (top_to_bottom && right_to_left) {

@@ -86,9 +86,9 @@ public class DontFindFox {
                 break;
             }
 
-            System.out.println("What row?");
+            System.out.println("What row? Enter a number between 0 and " + (row_count - 1));
             int row = Integer.parseInt(r.readLine());
-            System.out.println("What column?");
+            System.out.println("What column? Enter a number between 0 and " + (column_count - 1));
             int column = Integer.parseInt(r.readLine());
             System.out.println("What character?");
             char c = r.readLine().charAt(0);
@@ -117,27 +117,27 @@ public class DontFindFox {
         tiles.add('O', 6);
         tiles.add('X', 5);
 
-        computerVsPlayer(tiles, "FOX", 4, 4, 6, true);
+        computerVsPlayer(tiles, "FOX", 4, 4, 4, true);
 
-        // tiles = new TilesLeft();
-        // tiles.add('F', 21);
-        // tiles.add('O', 22);
-        // tiles.add('X', 21);
+        tiles = new TilesLeft();
+        tiles.add('F', 21);
+        tiles.add('O', 22);
+        tiles.add('X', 21);
 
         // computerVsComputer(tiles, "FOX", 8, 8, 4, false);
 
-        // tiles = new TilesLeft();
-        // tiles.add('P', 21);
-        // tiles.add('O', 22);
-        // tiles.add('L', 21);
+        tiles = new TilesLeft();
+        tiles.add('P', 21);
+        tiles.add('O', 22);
+        tiles.add('L', 21);
 
         // computerVsComputer(tiles, "POLO", 8, 8, 4, true);
 
-
-        // tiles.add('P', 16);
-        // tiles.add('O', 16);
-        // tiles.add('L', 16);
-        // tiles.add('E', 16);
+        tiles = new TilesLeft();
+        tiles.add('P', 16);
+        tiles.add('O', 16);
+        tiles.add('L', 16);
+        tiles.add('E', 16);
 
         // computerVsPlayer(tiles, "POLO", 8, 8, 4, true);
 	}
