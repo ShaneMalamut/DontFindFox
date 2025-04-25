@@ -12,8 +12,8 @@ public class PuzzleState {
     final int       column_count;
     final String    word;
     final TilesLeft tiles;
-    final boolean   turn;
-    final int       moves_made;
+    boolean         turn;
+    int             moves_made;
     int[]           last_cell_position = null;
 
     /**
@@ -56,7 +56,6 @@ public class PuzzleState {
 
     /**
      * Clones the current PuzzleState with a deep copy of the grid and tiles. 
-     * Also changes the turn and increases moves made.
      */
     public PuzzleState constructNeighbor() {
         // Make a copy of the grid by copying each row into a new grid
@@ -69,7 +68,7 @@ public class PuzzleState {
         TilesLeft newTiles = new TilesLeft(tiles);
 
         PuzzleState neighbor = new PuzzleState(newGrid, row_count, column_count, word, 
-            newTiles, !turn, moves_made + 1);
+            newTiles, turn, moves_made);
         return neighbor;
     }
 
@@ -89,9 +88,7 @@ public class PuzzleState {
                 if (grid[i][j] == 0) {
                     for (char tile : available) {
                         PuzzleState neighbor = constructNeighbor();
-                        
                         neighbor.insertTile(i, j, tile);
-                        neighbor.tiles.decrementPiece(tile);
                         
                         neighbors[count] = neighbor;
                         count++;
@@ -110,5 +107,8 @@ public class PuzzleState {
         grid[row][col] = tile;
         int[] position = {row, col};
         last_cell_position = position;
+        moves_made++;
+        turn = !turn;
+        tiles.decrementPiece(tile);
     }
 }
