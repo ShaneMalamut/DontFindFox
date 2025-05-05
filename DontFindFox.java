@@ -112,33 +112,47 @@ public class DontFindFox {
     
     public static void main (String[] args) throws IOException
     {
-        TilesLeft tiles = new TilesLeft();
-        tiles.add('F', 5);
-        tiles.add('O', 6);
-        tiles.add('X', 5);
+        while (true) {
+            BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
+            
+            System.out.println("How many rows?");
+            int rows = Integer.parseInt(r.readLine());
+            System.out.println("How many columns?");
+            int columns = Integer.parseInt(r.readLine());
 
-        computerVsPlayer(tiles, "FOX", 4, 4, 4, true);
+            TilesLeft tiles = new TilesLeft();
+            int tiles_count = 0;
+            while (tiles_count < rows * columns) {
+                System.out.print(rows * columns - tiles_count + " tiles still needed. Enter next character: ");
+                char c = r.readLine().charAt(0);
+                System.out.println("How many of that tile? ");
+                int count = Integer.parseInt(r.readLine());
+                if (tiles_count + count > rows * columns) {
+                    System.out.println("That's too many tiles. Please try again.");
+                } else {
+                    tiles_count += count;
+                    tiles.add(c, count);
+                }
+            }
 
-        tiles = new TilesLeft();
-        tiles.add('F', 21);
-        tiles.add('O', 22);
-        tiles.add('X', 21);
+            System.out.println("What is the special word?");
+            String word = r.readLine();
 
-        // computerVsComputer(tiles, "FOX", 8, 8, 4, false);
+            System.out.println("Does MAX go first? [Y/n]");
+            boolean turn = 'Y' == r.readLine().charAt(0);
 
-        tiles = new TilesLeft();
-        tiles.add('P', 21);
-        tiles.add('O', 22);
-        tiles.add('L', 21);
+            System.out.println("What depth should be used for the algorithm?");
+            int depth = Integer.parseInt(r.readLine());
 
-        // computerVsComputer(tiles, "POLO", 8, 8, 4, true);
+            System.out.println("Do you want to play against the computer? [Y/n]");
+            boolean PvC = 'Y' == r.readLine().charAt(0);
 
-        tiles = new TilesLeft();
-        tiles.add('P', 16);
-        tiles.add('O', 16);
-        tiles.add('L', 16);
-        tiles.add('E', 16);
-
-        // computerVsPlayer(tiles, "POLO", 8, 8, 4, true);
-	}
+            if (PvC) {
+                computerVsPlayer(tiles, word, rows, columns, depth, turn);
+            }
+            else {
+                computerVsComputer(tiles, word, rows, columns, depth, turn);
+            }
+        }
+    }
 }
